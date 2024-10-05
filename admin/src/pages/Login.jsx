@@ -6,16 +6,24 @@ const Login = () => {
   return (
     <form className="min-h-[80vh] flex items-center">
       <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-[#5e5e5e] text-sm shadow-sm shadow-lg">
-        <p>
-          <span>{state} </span>Login
+        <p className="text-2xl font-semibold m-auto ">
+          <span className="text-primary">{state} </span>Login
         </p>
-        <div>
+        <div className="w-full">
           <p>Email</p>
-          <input type="email" required />
+          <input
+            className="border border-[#dadada] rounded w-full p-2 mt-1 "
+            type="email"
+            required
+          />
         </div>
         <div>
           <p>Password</p>
-          <input type="password" required />
+          <input
+            className="border border-[#dadada] rounded w-full p-2 mt-1 "
+            type="password"
+            required
+          />
         </div>
         <button>Login</button>
       </div>
