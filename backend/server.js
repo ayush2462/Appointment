@@ -15,8 +15,8 @@ app.use(express.json());
 app.use(cors());
 
 //api endpoint
-app.use('/api/admin',adminRouter)
-//localhost:3000/api/admin/add-doctor 
+app.use("/api/admin", adminRouter);
+//localhost:3000/api/admin/add-doctor
 
 app.get("/", (req, res) => {
   res.send("hello world how are you");
