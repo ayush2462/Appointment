@@ -54,7 +54,6 @@ const AddDoctor = () => {
       );
       if (data.success) {
         toast.success(data.message);
-<<<<<<< HEAD
         setDocImg(false);
         setName("");
         setEmail("");
@@ -73,12 +72,6 @@ const AddDoctor = () => {
       toast.error(error.message);
       console.log(error);
     }
-=======
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {}
->>>>>>> 78d2b5294560589bb9a578557b97df3f8536230b
   };
   return (
     <form onSubmit={onSubmitHandler} className="m-5 w-full ">
