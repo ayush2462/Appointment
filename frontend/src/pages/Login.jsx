@@ -1,6 +1,11 @@
-import { useState } from "react";
-
+import { useContext, useEffect, useState } from "react";
+import { AppContext } from "../context/AppContext";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 const Login = () => {
+  const { backendUrl, token, setToken } = useContext(AppContext);
+const navigate= useNavigate()
   const [state, setState] = useState("Sign Up");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -9,8 +14,41 @@ const Login = () => {
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     // Add your login or sign-up logic here
-  };
 
+    try {
+      if (state === "Sign Up") {
+        const { data } = await axios.post(backendUrl + "/api/user/register", {
+          name,
+          email,
+          password,
+        });
+        if (data.success) {
+          localStorage.setItem("token", data.token);
+          setToken(data.token);
+        } else {
+          toast.error(data.message);
+        }
+      } else {
+        const { data } = await axios.post(backendUrl + "/api/user/login", {
+          email,
+          password,
+        });
+        if (data.success) {
+          localStorage.setItem("token", data.token);
+          setToken(data.token);
+        } else {
+          toast.error(data.message);
+        }
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+useEffect(()=>{
+if (token) {
+  navigate('/')
+}
+},[token])
   return (
     <form
       className="min-h-screen flex items-center justify-center bg-gray-100"
@@ -21,7 +59,8 @@ const Login = () => {
           {state === "Sign Up" ? "Create Account" : "Login"}
         </h2>
         <p className="text-gray-600 mb-4">
-          Please {state === "Sign Up" ? "sign up" : "log in"} to book an appointment.
+          Please {state === "Sign Up" ? "sign up" : "log in"} to book an
+          appointment.
         </p>
 
         {state === "Sign Up" && (
@@ -76,7 +115,9 @@ const Login = () => {
         </button>
 
         <p className="mt-4 text-gray-600 text-sm text-center">
-          {state === "Sign Up" ? "Already have an account?" : "Don't have an account?"}{" "}
+          {state === "Sign Up"
+            ? "Already have an account?"
+            : "Don't have an account?"}{" "}
           <span
             onClick={() => setState(state === "Sign Up" ? "Login" : "Sign Up")}
             className="text-primary font-semibold cursor-pointer hover:underline"
