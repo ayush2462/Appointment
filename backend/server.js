@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/mongodb.js";
 import connectCloudinary from "./config/cloudinary.js";
 import adminRouter from "./routes/adminRoute.js";
+import doctorRouter from "./routes/doctorRoute.js";
 const app = express();
 dotenv.config();
 const port = process.env.PORT || 3000;
@@ -17,7 +18,7 @@ app.use(cors());
 //api endpoint
 app.use("/api/admin", adminRouter);
 //localhost:3000/api/admin/add-doctor
-
+app.use("/api/doctor", doctorRouter);
 app.get("/", (req, res) => {
   res.send("hello world how are you");
 });
