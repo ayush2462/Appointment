@@ -1,17 +1,22 @@
 import React, { useContext } from "react";
 import { AdminContext } from "../context/AdminContext";
+import { DoctorContext } from "../context/DoctorContext";
 import { NavLink } from "react-router-dom";
 import { assets } from "../assets/assets";
+
 const Sidebar = () => {
   const { aToken } = useContext(AdminContext);
+  const { dToken } = useContext(DoctorContext);
+
   return (
     <div className="min-h-screen bg-white border-r">
+      {/* Admin Sidebar Links */}
       {aToken && (
         <ul className="text-[#515151] mt-5">
           <NavLink
             className={({ isActive }) =>
               `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${
-                isActive ? "bg-[#f2f3ff] border-r-4 border-primary" : ""
+                isActive ? "bg-[#f2f3ff] border-r-4 border-primary text-primary font-semibold" : ""
               }`
             }
             to={"/admin-dashboard"}
@@ -22,7 +27,7 @@ const Sidebar = () => {
           <NavLink
             className={({ isActive }) =>
               `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${
-                isActive ? "bg-[#f2f3ff] border-r-4 border-primary" : ""
+                isActive ? "bg-[#f2f3ff] border-r-4 border-primary text-primary font-semibold" : ""
               }`
             }
             to={"/all-appointments"}
@@ -33,7 +38,7 @@ const Sidebar = () => {
           <NavLink
             className={({ isActive }) =>
               `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${
-                isActive ? "bg-[#f2f3ff] border-r-4 border-primary" : ""
+                isActive ? "bg-[#f2f3ff] border-r-4 border-primary text-primary font-semibold" : ""
               }`
             }
             to={"/add-doctor"}
@@ -44,13 +49,52 @@ const Sidebar = () => {
           <NavLink
             className={({ isActive }) =>
               `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${
-                isActive ? "bg-[#f2f3ff] border-r-4 border-primary" : ""
+                isActive ? "bg-[#f2f3ff] border-r-4 border-primary text-primary font-semibold" : ""
               }`
             }
             to={"/doctor-list"}
           >
             <img src={assets.people_icon} alt="" />
             <p>Doctor List</p>
+          </NavLink>
+        </ul>
+      )}
+
+      {/* Doctor Sidebar Links */}
+      {dToken && (
+        <ul className="text-[#515151] mt-5">
+          <NavLink
+            className={({ isActive }) =>
+              `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${
+                isActive ? "bg-[#f2f3ff] border-r-4 border-primary text-primary font-semibold" : ""
+              }`
+            }
+            to={"/doctor-dashboard"}
+          >
+            <img src={assets.home_icon} alt="" />
+            <p>Dashboard</p>
+          </NavLink>
+          <NavLink
+            className={({ isActive }) =>
+              `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${
+                isActive ? "bg-[#f2f3ff] border-r-4 border-primary text-primary font-semibold" : ""
+              }`
+            }
+            to={"/doctor-appointments"}
+          >
+            <img src={assets.appointment_icon} alt="" />
+            <p>Patient Appointments</p>
+          </NavLink>
+          <NavLink
+            className={({ isActive }) =>
+              `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${
+                isActive ? "bg-[#f2f3ff] border-r-4 border-primary text-primary font-semibold" : ""
+              }`
+            }
+            to={"/doctor-profile"}
+          >
+            <img src={assets.people_icon} alt="" />
+            <p>My Profile</p>
           </NavLink>
         </ul>
       )}

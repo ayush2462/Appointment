@@ -9,7 +9,10 @@ const AdminContextProvider = (props) => {
     localStorage.getItem("aToken") ? localStorage.getItem("aToken") : ""
   );
   const [doctors, setDoctors] = useState([]);
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const [appointments, setAppointments] = useState([]);
+  const [dashData, setDashData] = useState(false);
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
   const getAllDoctors = async () => {
     try {
@@ -20,7 +23,6 @@ const AdminContextProvider = (props) => {
       );
       if (data.success) {
         setDoctors(data.doctors);
-        console.log(data.doctors);
       } else {
         toast.error(data.message);
       }
@@ -47,13 +49,109 @@ const AdminContextProvider = (props) => {
     }
   };
 
+  const deleteDoctor = async (docId) => {
+    try {
+      const { data } = await axios.post(
+        backendUrl + "/api/admin/delete-doctor",
+        { docId },
+        { headers: { aToken } }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        getAllDoctors();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const editDoctor = async (docId, updatedData) => {
+    try {
+      const { data } = await axios.post(
+        backendUrl + "/api/admin/edit-doctor",
+        { docId, ...updatedData },
+        { headers: { aToken } }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        getAllDoctors();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const getAllAppointments = async () => {
+    try {
+      const { data } = await axios.get(backendUrl + "/api/admin/appointments", {
+        headers: { aToken },
+      });
+
+      if (data.success) {
+        setAppointments(data.appointments.reverse());
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const cancelAppointment = async (appointmentId) => {
+    try {
+      const { data } = await axios.post(
+        backendUrl + "/api/admin/cancel-appointment",
+        { appointmentId },
+        { headers: { aToken } }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        getAllAppointments();
+        getDashData();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const getDashData = async () => {
+    try {
+      const { data } = await axios.get(backendUrl + "/api/admin/dashboard", {
+        headers: { aToken },
+      });
+
+      if (data.success) {
+        setDashData(data.dashData);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
   const value = {
     aToken,
     setAToken,
     backendUrl,
     doctors,
     getAllDoctors,
-    changeAvailability, // Added changeAvailability to the context value
+    changeAvailability,
+    deleteDoctor,
+    editDoctor,
+    appointments,
+    setAppointments,
+    getAllAppointments,
+    cancelAppointment,
+    dashData,
+    getDashData,
   };
 
   return (
