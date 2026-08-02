@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { assets } from "../../assets/assets";
 import { AdminContext } from "../../context/AdminContext";
 import { toast } from "react-toastify";
@@ -17,7 +17,24 @@ const AddDoctor = () => {
   const [address1, setAddress1] = useState("");
   const [address2, setAddress2] = useState("");
 
-  const { backendUrl, aToken, getAllDoctors } = useContext(AdminContext);
+  const { backendUrl, aToken, getAllDoctors, departments, getDepartments } =
+    useContext(AdminContext);
+
+  useEffect(() => {
+    if (aToken) {
+      getDepartments();
+    }
+  }, [aToken]);
+
+  // Set default speciality when departments change
+  useEffect(() => {
+    if (departments && departments.length > 0) {
+      const activeDepts = departments.filter((d) => d.status !== false);
+      if (activeDepts.length > 0) {
+        setSpeciality(activeDepts[0].name);
+      }
+    }
+  }, [departments]);
 
   const onSubmitHandler = async (event) => {
     event.preventDefault();
@@ -174,18 +191,32 @@ const AddDoctor = () => {
           {/* Right Column */}
           <div className="w-full lg:flex-1 flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="font-medium text-gray-700">Speciality</label>
+              <label className="font-medium text-gray-700">Speciality / Department</label>
               <select
                 onChange={(e) => setSpeciality(e.target.value)}
                 value={speciality}
                 className="border border-gray-300 rounded-lg px-3.5 py-2.5 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm bg-white"
               >
-                <option value="General Physician">General Physician</option>
-                <option value="Gynecologist">Gynecologist</option>
-                <option value="Dermatologist">Dermatologist</option>
-                <option value="Pediatricians">Pediatricians</option>
-                <option value="Gastroenterologist">Gastroenterologist</option>
-                <option value="Neurologist">Neurologist</option>
+                {departments && departments.length > 0
+                  ? departments
+                      .filter((dept) => dept.status !== false)
+                      .map((dept) => (
+                        <option key={dept._id} value={dept.name}>
+                          {dept.name}
+                        </option>
+                      ))
+                  : [
+                      "General Physician",
+                      "Gynecologist",
+                      "Dermatologist",
+                      "Pediatricians",
+                      "Gastroenterologist",
+                      "Neurologist",
+                    ].map((spec) => (
+                      <option key={spec} value={spec}>
+                        {spec}
+                      </option>
+                    ))}
               </select>
             </div>
 

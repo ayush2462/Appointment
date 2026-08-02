@@ -6,8 +6,9 @@ export const AppContext = createContext();
 
 const AppContextProvider = (props) => {
   const currencySymbol = "₹";
-  const backendUrl = import.meta.env.VITE_BACKEND || "http://localhost:3000";
+  const backendUrl = (import.meta.env.VITE_BACKEND || "http://localhost:3000").trim();
   const [doctors, setDoctors] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [token, setToken] = useState(
     localStorage.getItem("token") ? localStorage.getItem("token") : false
   );
@@ -24,6 +25,17 @@ const AppContextProvider = (props) => {
     } catch (error) {
       console.error(error);
       toast.error(error.message);
+    }
+  };
+
+  const getDepartmentsData = async () => {
+    try {
+      const { data } = await axios.get(backendUrl + "/api/user/departments");
+      if (data.success) {
+        setDepartments(data.departments);
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -46,6 +58,8 @@ const AppContextProvider = (props) => {
   const value = {
     doctors,
     getDoctorsData,
+    departments,
+    getDepartmentsData,
     currencySymbol,
     token,
     setToken,
@@ -57,6 +71,7 @@ const AppContextProvider = (props) => {
 
   useEffect(() => {
     getDoctorsData();
+    getDepartmentsData();
   }, []);
 
   useEffect(() => {

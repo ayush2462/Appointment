@@ -3,14 +3,31 @@ import { AppContext } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import {
+  Calendar,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  FileText,
+  Search,
+  Printer,
+  MapPin,
+  Stethoscope,
+  ExternalLink,
+  ShieldCheck,
+  CreditCard,
+  User,
+  Sparkles,
+} from "lucide-react";
 
 const MyAppointment = () => {
-  const { backendUrl, token, getDoctorsData, currencySymbol } =
+  const { backendUrl, token, getDoctorsData, currencySymbol, userData } =
     useContext(AppContext);
   const navigate = useNavigate();
 
   const [appointments, setAppointments] = useState([]);
   const [filterType, setFilterType] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedRecord, setSelectedRecord] = useState(null);
 
   const months = [
@@ -74,7 +91,7 @@ const MyAppointment = () => {
   };
 
   const handlePayOnline = () => {
-    toast.info("Payment feature initialized! You can pay online or at the clinic.");
+    toast.info("Online payment mode active! You can pay via UPI / NetBanking or at clinic.");
   };
 
   const generateGoogleCalendarUrl = (docName, slotDate, slotTime) => {
@@ -89,6 +106,10 @@ const MyAppointment = () => {
     )}&dates=${dateStr}T100000Z/${dateStr}T103000Z&details=Appointment+booked+via+Prescripto+Doctor+Portal`;
   };
 
+  const handlePrintRecord = () => {
+    window.print();
+  };
+
   useEffect(() => {
     if (token) {
       getUserAppointments();
@@ -100,6 +121,12 @@ const MyAppointment = () => {
   const cancelledCount = appointments.filter((item) => item.cancelled).length;
 
   const filteredAppointments = appointments.filter((item) => {
+    const matchesSearch =
+      item.docData.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.docData.speciality.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (!matchesSearch) return false;
+
     if (filterType === "upcoming") return !item.cancelled && !item.isCompleted;
     if (filterType === "completed") return item.isCompleted;
     if (filterType === "cancelled") return item.cancelled;
@@ -108,14 +135,17 @@ const MyAppointment = () => {
 
   if (!token) {
     return (
-      <div className="max-w-md mx-auto my-20 p-8 bg-white border border-gray-100 rounded-2xl shadow-sm text-center space-y-4">
-        <p className="text-xl font-bold text-gray-800">Login Required</p>
-        <p className="text-sm text-gray-500">
-          Please log in to view your scheduled doctor appointments.
+      <div className="max-w-md mx-auto my-20 p-8 bg-white border border-gray-100 rounded-3xl shadow-sm text-center space-y-4 font-sans">
+        <div className="w-16 h-16 bg-indigo-50 text-primary rounded-full flex items-center justify-center mx-auto">
+          <User className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-800">Login Required</h2>
+        <p className="text-xs text-gray-500">
+          Please log in to your patient account to access past medical prescriptions and upcoming appointments.
         </p>
         <button
           onClick={() => navigate("/login")}
-          className="bg-primary text-white px-8 py-2.5 rounded-full font-medium shadow hover:bg-primary-dark transition-all text-sm"
+          className="bg-primary text-white px-8 py-2.5 rounded-full font-semibold shadow hover:bg-primary-dark transition-all text-xs"
         >
           Go to Login
         </button>
@@ -124,258 +154,337 @@ const MyAppointment = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-6">
-      {/* Header & Stats Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4">
+    <div className="max-w-6xl mx-auto p-4 sm:p-8 space-y-6 font-sans">
+      {/* Header & Stats Banner */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            My Appointments
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 flex items-center gap-2">
+            <FileText className="w-8 h-8 text-primary" />
+            Patient Medical Records & Appointments
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-1">
-            Track your consultations and view doctor prescriptions
+            Access past consultation prescriptions, view upcoming appointments, and manage healthcare records.
           </p>
         </div>
 
         {/* Stats Pills */}
         <div className="flex items-center gap-2 text-xs font-semibold flex-wrap">
-          <div className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full border border-indigo-100">
-            Total: {appointments.length}
+          <div className="bg-indigo-50 text-indigo-700 px-3.5 py-1.5 rounded-full border border-indigo-100 shadow-xs">
+            Total Records: {appointments.length}
           </div>
-          <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full border border-emerald-100">
-            Active: {activeCount}
+          <div className="bg-emerald-50 text-emerald-700 px-3.5 py-1.5 rounded-full border border-emerald-100 shadow-xs">
+            Upcoming: {activeCount}
           </div>
           {completedCount > 0 && (
-            <div className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full border border-blue-100">
+            <div className="bg-blue-50 text-blue-700 px-3.5 py-1.5 rounded-full border border-blue-100 shadow-xs">
               Completed: {completedCount}
             </div>
           )}
           {cancelledCount > 0 && (
-            <div className="bg-red-50 text-red-700 px-3 py-1.5 rounded-full border border-red-100">
+            <div className="bg-rose-50 text-rose-700 px-3.5 py-1.5 rounded-full border border-rose-100 shadow-xs">
               Cancelled: {cancelledCount}
             </div>
           )}
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-gray-100 pb-2 flex-wrap">
-        <button
-          onClick={() => setFilterType("all")}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            filterType === "all"
-              ? "bg-primary text-white shadow-sm"
-              : "text-gray-600 hover:bg-gray-100"
-          }`}
-        >
-          All ({appointments.length})
-        </button>
-        <button
-          onClick={() => setFilterType("upcoming")}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            filterType === "upcoming"
-              ? "bg-primary text-white shadow-sm"
-              : "text-gray-600 hover:bg-gray-100"
-          }`}
-        >
-          Upcoming ({activeCount})
-        </button>
-        <button
-          onClick={() => setFilterType("completed")}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            filterType === "completed"
-              ? "bg-primary text-white shadow-sm"
-              : "text-gray-600 hover:bg-gray-100"
-          }`}
-        >
-          Completed ({completedCount})
-        </button>
-        <button
-          onClick={() => setFilterType("cancelled")}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-            filterType === "cancelled"
-              ? "bg-primary text-white shadow-sm"
-              : "text-gray-600 hover:bg-gray-100"
-          }`}
-        >
-          Cancelled ({cancelledCount})
-        </button>
+      {/* Filter Tabs & Search Bar */}
+      <div className="bg-white p-4 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Filter Buttons */}
+        <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-xl w-full md:w-auto">
+          <button
+            onClick={() => setFilterType("all")}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition ${
+              filterType === "all"
+                ? "bg-white text-primary shadow-xs"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            All ({appointments.length})
+          </button>
+          <button
+            onClick={() => setFilterType("upcoming")}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition ${
+              filterType === "upcoming"
+                ? "bg-white text-primary shadow-xs"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Upcoming ({activeCount})
+          </button>
+          <button
+            onClick={() => setFilterType("completed")}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition ${
+              filterType === "completed"
+                ? "bg-white text-primary shadow-xs"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Completed ({completedCount})
+          </button>
+          <button
+            onClick={() => setFilterType("cancelled")}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition ${
+              filterType === "cancelled"
+                ? "bg-white text-primary shadow-xs"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Cancelled ({cancelledCount})
+          </button>
+        </div>
+
+        {/* Search Input */}
+        <div className="relative w-full md:w-72">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search doctor or speciality..."
+            className="w-full pl-10 pr-4 py-2 text-xs border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
+          />
+        </div>
       </div>
 
-      {/* Appointment Cards */}
+      {/* Appointment & Medical Record List */}
       <div className="space-y-4">
-        {filteredAppointments.map((item, i) => (
-          <div
-            className="bg-white shadow-sm hover:shadow-md transition-all rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row gap-6 items-center border border-gray-100"
-            key={i}
-          >
-            {/* Doctor Image */}
-            <div className="w-28 h-28 sm:w-32 sm:h-32 flex-shrink-0 bg-indigo-50 rounded-xl overflow-hidden border border-indigo-100">
-              <img
-                className="w-full h-full object-cover"
-                src={item.docData.image}
-                alt={`${item.docData.name} profile`}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src =
-                    "https://raw.githubusercontent.com/ayush2462/Appointment/main/frontend/src/assets/doc1.png";
-                }}
-              />
-            </div>
+        {filteredAppointments.map((item, i) => {
+          const isCompleted = item.isCompleted;
+          const isCancelled = item.cancelled;
+          const isUpcoming = !isCompleted && !isCancelled;
 
-            {/* Appointment Details */}
-            <div className="flex-1 text-sm text-gray-700 space-y-2 text-center sm:text-left">
-              <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                <p className="text-xl font-bold text-gray-900">
-                  {item.docData.name}
-                </p>
-                {item.isCompleted ? (
-                  <span className="bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-0.5 rounded-full border border-blue-100">
-                    Completed & Record Sent
-                  </span>
-                ) : !item.cancelled ? (
-                  <span className="bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-0.5 rounded-full border border-emerald-100">
-                    Confirmed & Upcoming
-                  </span>
-                ) : (
-                  <span className="bg-red-50 text-red-600 text-xs font-semibold px-3 py-0.5 rounded-full border border-red-100">
-                    Cancelled
-                  </span>
+          return (
+            <div
+              key={i}
+              className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-200/90 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row gap-6 items-center justify-between"
+            >
+              {/* Doctor Profile & Status */}
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left flex-1">
+                <img
+                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover object-top bg-indigo-50 border border-indigo-100 shrink-0"
+                  src={item.docData.image}
+                  alt={item.docData.name}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src =
+                      "https://raw.githubusercontent.com/ayush2462/Appointment/main/frontend/src/assets/doc1.png";
+                  }}
+                />
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                    <h3 className="text-lg font-bold text-gray-900 leading-tight">
+                      {item.docData.name}
+                    </h3>
+
+                    {isCompleted && (
+                      <span className="bg-blue-50 text-blue-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-blue-200 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-blue-600" /> Completed Record
+                      </span>
+                    )}
+
+                    {isUpcoming && (
+                      <span className="bg-emerald-50 text-emerald-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-emerald-600" /> Scheduled Visit
+                      </span>
+                    )}
+
+                    {isCancelled && (
+                      <span className="bg-rose-50 text-rose-600 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-rose-200 flex items-center gap-1">
+                        <XCircle className="w-3 h-3 text-rose-500" /> Cancelled
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-primary font-semibold">
+                    {item.docData.speciality} • Fee: <span className="font-extrabold">{currencySymbol}{item.amount}</span>
+                  </p>
+
+                  <p className="text-xs text-gray-500 flex items-start gap-1 justify-center sm:justify-start mt-1">
+                    <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" />
+                    <span>
+                      {item.docData.address?.line1}, {item.docData.address?.line2}
+                    </span>
+                  </p>
+
+                  <div className="pt-2 flex items-center justify-center sm:justify-start gap-3 text-xs">
+                    <div className="bg-indigo-50/70 px-3 py-1 rounded-lg border border-indigo-100 flex items-center gap-1.5 font-bold text-primary">
+                      <Calendar className="w-3.5 h-3.5" />
+                      {slotDateFormat(item.slotDate)}
+                    </div>
+                    <div className="bg-gray-100 px-3 py-1 rounded-lg font-bold text-gray-700 flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-gray-500" />
+                      {item.slotTime}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons Container */}
+              <div className="flex flex-col gap-2.5 w-full sm:w-48 shrink-0">
+                {isCompleted && (
+                  <button
+                    onClick={() => setSelectedRecord(item)}
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs transition flex items-center justify-center gap-1.5"
+                  >
+                    <FileText className="w-3.5 h-3.5" /> View Prescription
+                  </button>
+                )}
+
+                {isUpcoming && (
+                  <>
+                    <button
+                      onClick={handlePayOnline}
+                      className="w-full py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-semibold shadow-xs transition flex items-center justify-center gap-1.5"
+                    >
+                      <CreditCard className="w-3.5 h-3.5" /> Pay ({currencySymbol}{item.amount})
+                    </button>
+
+                    <a
+                      href={generateGoogleCalendarUrl(
+                        item.docData.name,
+                        item.slotDate,
+                        item.slotTime
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2 border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl text-xs font-medium text-center transition flex items-center justify-center gap-1.5"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 text-gray-400" /> Add to Calendar
+                    </a>
+
+                    <button
+                      onClick={() => cancelAppointment(item._id)}
+                      className="w-full py-2 border border-rose-200 hover:bg-rose-50 text-rose-600 rounded-xl text-xs font-medium transition"
+                    >
+                      Cancel Appointment
+                    </button>
+                  </>
+                )}
+
+                {isCancelled && (
+                  <div className="w-full py-2.5 bg-rose-50/70 border border-rose-200/80 text-rose-600 rounded-xl text-xs font-semibold text-center">
+                    Slot Released
+                  </div>
                 )}
               </div>
-
-              <p className="text-indigo-600 font-medium text-xs">
-                {item.docData.speciality} • Fee:{" "}
-                <span className="font-bold">{currencySymbol}{item.amount}</span>
-              </p>
-
-              <div className="text-xs text-gray-500 space-y-0.5 pt-1">
-                <p className="font-medium text-gray-700">Clinic Address:</p>
-                <p>{item.docData.address?.line1}</p>
-                <p>{item.docData.address?.line2}</p>
-              </div>
-
-              <div className="pt-2">
-                <p className="text-xs font-medium text-gray-700">Date & Time:</p>
-                <p className="text-sm font-bold text-primary">
-                  {slotDateFormat(item.slotDate)} | {item.slotTime}
-                </p>
-              </div>
             </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col space-y-2 w-full sm:w-auto">
-              {item.isCompleted && (
-                <button
-                  onClick={() => setSelectedRecord(item)}
-                  className="w-full sm:min-w-44 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all text-xs font-semibold shadow-sm"
-                >
-                  View Prescription & Record
-                </button>
-              )}
-
-              {!item.cancelled && !item.isCompleted && (
-                <>
-                  <button
-                    onClick={handlePayOnline}
-                    className="w-full sm:min-w-44 px-4 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-dark transition-all text-xs font-semibold shadow-sm"
-                  >
-                    Pay Online ({currencySymbol}{item.amount})
-                  </button>
-
-                  <a
-                    href={generateGoogleCalendarUrl(
-                      item.docData.name,
-                      item.slotDate,
-                      item.slotTime
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full sm:min-w-44 px-4 py-2 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all text-xs font-medium text-center"
-                  >
-                    Add to Calendar
-                  </a>
-
-                  <button
-                    onClick={() => cancelAppointment(item._id)}
-                    className="w-full sm:min-w-44 px-4 py-2 border border-red-200 text-red-600 rounded-xl hover:bg-red-50 transition-all text-xs font-medium"
-                  >
-                    Cancel Appointment
-                  </button>
-                </>
-              )}
-
-              {item.cancelled && (
-                <div className="w-full sm:min-w-44 px-4 py-3 border border-red-200 text-red-500 bg-red-50/50 rounded-xl text-xs font-semibold text-center">
-                  Appointment Cancelled
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
 
         {filteredAppointments.length === 0 && (
-          <div className="bg-white p-12 rounded-2xl border border-gray-100 text-center space-y-3">
-            <p className="text-gray-400 font-medium">No appointments found in this category.</p>
+          <div className="bg-white p-12 rounded-3xl border border-dashed border-gray-300 text-center my-6 space-y-3">
+            <div className="w-16 h-16 bg-indigo-50 text-primary rounded-full flex items-center justify-center mx-auto mb-2">
+              <Stethoscope className="w-8 h-8" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-800">No records found</h3>
+            <p className="text-xs text-gray-500 max-w-sm mx-auto">
+              You have no past prescriptions or upcoming appointments matching this category.
+            </p>
             <button
               onClick={() => navigate("/doctors")}
-              className="bg-primary text-white text-xs font-medium px-6 py-2.5 rounded-full shadow hover:bg-primary-dark transition-all"
+              className="mt-2 bg-primary text-white text-xs font-semibold px-6 py-2.5 rounded-full shadow hover:bg-primary-dark transition-all"
             >
-              Book an Appointment Now
+              Book an Appointment
             </button>
           </div>
         )}
       </div>
 
-      {/* Doctor Record / Prescription Modal */}
+      {/* PRINTABLE DIGITAL PRESCRIPTION MODAL */}
       {selectedRecord && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b pb-3">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 w-full max-w-xl shadow-2xl border border-gray-100 space-y-6 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+            {/* Header / Hospital Seal */}
+            <div className="flex items-center justify-between border-b pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-xl">
+                  Rx
+                </div>
+                <div>
+                  <h2 className="text-lg font-extrabold text-gray-900 leading-tight">
+                    Prescripto Medical Prescription
+                  </h2>
+                  <p className="text-xs text-gray-500">
+                    Official Digital Healthcare Summary Record
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePrintRecord}
+                  className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition flex items-center gap-1.5"
+                  title="Print Prescription"
+                >
+                  <Printer className="w-4 h-4" /> Print
+                </button>
+                <button
+                  onClick={() => setSelectedRecord(null)}
+                  className="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100 font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Doctor & Patient Info */}
+            <div className="grid grid-cols-2 gap-4 text-xs bg-gray-50 p-4 rounded-2xl border border-gray-100">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">
-                  Doctor Record & Prescription
-                </h2>
-                <p className="text-xs text-gray-500">
-                  Dr. {selectedRecord.docData.name} ({selectedRecord.docData.speciality})
+                <span className="text-[10px] font-bold uppercase text-gray-400 block mb-0.5">
+                  Attending Doctor
+                </span>
+                <p className="font-bold text-gray-900 text-sm">Dr. {selectedRecord.docData.name}</p>
+                <p className="text-primary font-semibold">{selectedRecord.docData.speciality}</p>
+                <p className="text-gray-500 mt-1">{selectedRecord.docData.degree}</p>
+              </div>
+
+              <div className="border-l border-gray-200 pl-4">
+                <span className="text-[10px] font-bold uppercase text-gray-400 block mb-0.5">
+                  Consultation Info
+                </span>
+                <p className="font-bold text-gray-900 text-sm">
+                  {slotDateFormat(selectedRecord.slotDate)}
+                </p>
+                <p className="text-gray-600 font-semibold">{selectedRecord.slotTime}</p>
+                <p className="text-emerald-700 font-bold mt-1">
+                  Fee Paid: {currencySymbol}{selectedRecord.amount}
                 </p>
               </div>
-              <button
-                onClick={() => setSelectedRecord(null)}
-                className="text-gray-400 hover:text-gray-600 text-lg font-bold"
-              >
-                ✕
-              </button>
             </div>
 
+            {/* Clinical Diagnosis & Notes */}
             <div className="space-y-4 text-xs">
-              <div className="bg-indigo-50 p-3.5 rounded-xl border border-indigo-100">
-                <p className="text-xs text-indigo-700 font-semibold uppercase">Consultation Date</p>
-                <p className="text-sm font-bold text-gray-800 mt-0.5">
-                  {slotDateFormat(selectedRecord.slotDate)} at {selectedRecord.slotTime}
+              <div className="bg-indigo-50/70 p-4 rounded-2xl border border-indigo-100 space-y-1">
+                <div className="flex items-center gap-1.5 text-primary font-bold text-sm">
+                  <Stethoscope className="w-4 h-4" /> Diagnosis & Clinical Notes:
+                </div>
+                <p className="text-gray-800 leading-relaxed font-medium pt-1">
+                  {selectedRecord.meetingNotes || "Patient consultation completed cleanly. Vitals stable."}
                 </p>
               </div>
 
-              <div className="space-y-1 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                <p className="font-bold text-gray-800 text-sm">Meeting Notes / Diagnosis:</p>
-                <p className="text-gray-700 leading-relaxed font-medium">
-                  {selectedRecord.meetingNotes || "Consultation completed successfully."}
-                </p>
-              </div>
-
-              <div className="space-y-1 bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                <p className="font-bold text-emerald-800 text-sm">Prescription & Instructions:</p>
-                <p className="text-emerald-900 leading-relaxed font-medium">
-                  {selectedRecord.prescription || "Follow-up advised as per discussion."}
+              <div className="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-100 space-y-1">
+                <div className="flex items-center gap-1.5 text-emerald-800 font-bold text-sm">
+                  <Sparkles className="w-4 h-4 text-emerald-600" /> Prescribed Medications & Instructions:
+                </div>
+                <p className="text-emerald-950 leading-relaxed font-medium pt-1 whitespace-pre-wrap">
+                  {selectedRecord.prescription || "No special Rx prescribed. Follow-up as needed."}
                 </p>
               </div>
             </div>
 
-            <div className="flex justify-end pt-3 border-t">
+            {/* Footer Seal */}
+            <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
+              <div className="flex items-center gap-1">
+                <ShieldCheck className="w-4 h-4 text-emerald-500" /> Authenticated by Prescripto Healthcare
+              </div>
               <button
                 onClick={() => setSelectedRecord(null)}
-                className="px-6 py-2 bg-primary text-white rounded-xl text-xs font-semibold shadow hover:bg-primary-dark"
+                className="px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl font-semibold shadow-xs text-xs transition"
               >
-                Close Record
+                Done
               </button>
             </div>
           </div>
